@@ -1,0 +1,5 @@
+build:
+  name: my-app
+  version: 1.0.0
+  description: Simple example build configuration
+  image: latest
