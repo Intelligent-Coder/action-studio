@@ -1,0 +1,7 @@
+build:
+  name: my-app-dev
+  version: 1.0.1
+  description: Dev example build configuration
+
+  image:
+    name: my-app-image
