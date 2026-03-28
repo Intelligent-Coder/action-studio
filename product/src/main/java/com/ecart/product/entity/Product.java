@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "products", schema = "ecom")
+@Table(name = "products")
 @NoArgsConstructor
 public class Product {
     @Id
@@ -29,4 +29,15 @@ public class Product {
     private LocalDateTime createdAt;
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void isCreated() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void isUpdated() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

@@ -1,0 +1,35 @@
+# Get all products
+curl -X GET http://localhost:8082/api/products
+
+# Get product by ID (replace 1 with a valid product ID)
+curl -X GET http://localhost:8082/api/products/1
+
+# Create a new product
+curl -X POST http://localhost:8082/api/products \
+-H "Content-Type: application/json" \
+-d '{
+  "name": "Sample Product",
+  "description": "This is a sample product.",
+  "price": 19.99,
+  "stockQuantity": 100,
+  "imageUrl": "http://example.com/product.jpg",
+  "category": "Electronics"
+}'
+
+# Update an existing product (replace 1 with a valid product ID)
+curl -X PUT http://localhost:8082/api/products/1 \
+-H "Content-Type: application/json" \
+-d '{
+  "name": "Updated Product Name",
+  "description": "This is the updated product description.",
+  "price": 29.99,
+  "stockQuantity": 50,
+  "imageUrl": "http://example.com/updated-product.jpg",
+  "category": "Home Goods"
+}'
+
+# Delete a product (replace 1 with a valid product ID)
+curl -X DELETE http://localhost:8082/api/products/1
+
+# Search for products (replace 'keyword' with your search term)
+curl -X GET http://localhost:8082/api/products/search?keyword=keyword

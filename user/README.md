@@ -54,7 +54,7 @@ The application is configured to use H2 by default. No setup required!
 **Features:**
 - Embedded in-memory database
 - Automatic schema creation
-- Web console available at `http://localhost:8081/h2-console`
+- Web console available at `http://localhost:8082/h2-console`
 
 **H2 Console Credentials:**
 ```
@@ -124,24 +124,24 @@ mvn clean install
 mvn spring-boot:run
 ```
 
-The application will start on `http://localhost:8081`
+The application will start on `http://localhost:8082`
 
 ## API Documentation
 
 ### Swagger UI
 Once the application is running, access the interactive API documentation:
 ```
-http://localhost:8081/swagger-ui.html
+http://localhost:8082/swagger-ui.html
 ```
 
 ### OpenAPI/JSON
 ```
-http://localhost:8081/v3/api-docs
+http://localhost:8082/v3/api-docs
 ```
 
 ### H2 Console
 ```
-http://localhost:8081/h2-console
+http://localhost:8082/h2-console
 ```
 
 ## API Endpoints
@@ -161,7 +161,7 @@ http://localhost:8081/h2-console
 
 ### Create a User
 ```bash
-curl -X POST http://localhost:8081/api/users \
+curl -X POST http://localhost:8082/api/users \
   -H "Content-Type: application/json" \
   -d '{
     "email": "john.doe@example.com",
@@ -179,17 +179,17 @@ curl -X POST http://localhost:8081/api/users \
 
 ### Get User by ID
 ```bash
-curl http://localhost:8081/api/users/1
+curl http://localhost:8082/api/users/1
 ```
 
 ### Get User by Email
 ```bash
-curl http://localhost:8081/api/users/email/john.doe@example.com
+curl http://localhost:8082/api/users/email/john.doe@example.com
 ```
 
 ### Update User
 ```bash
-curl -X PUT http://localhost:8081/api/users/1 \
+curl -X PUT http://localhost:8082/api/users/1 \
   -H "Content-Type: application/json" \
   -d '{
     "email": "john.doe@example.com",
@@ -207,12 +207,12 @@ curl -X PUT http://localhost:8081/api/users/1 \
 
 ### Delete User
 ```bash
-curl -X DELETE http://localhost:8081/api/users/1
+curl -X DELETE http://localhost:8082/api/users/1
 ```
 
 ### Get All Users
 ```bash
-curl http://localhost:8081/api/users
+curl http://localhost:8082/api/users
 ```
 
 ## Technologies Used
@@ -244,7 +244,7 @@ spring:
       ddl-auto: create-drop
 
 server:
-  port: 8081
+  port: 8082
 
 springdoc:
   swagger-ui:
@@ -317,10 +317,10 @@ Key dependencies managed by Maven:
 ## Troubleshooting
 
 ### Port Already in Use
-If port 8081 is already in use, change it in application.yml:
+If port 8082 is already in use, change it in application.yml:
 ```yaml
 server:
-  port: 8082
+  port: 8083
 ```
 
 ### H2 Console Not Accessible
@@ -344,9 +344,9 @@ Ensure email and phone number are unique:
 
 ## Microservice Endpoints
 
-This service runs on **port 8081** and can be accessed at:
+This service runs on **port 8082** and can be accessed at:
 ```
-http://localhost:8081
+http://localhost:8082
 ```
 
 For production deployments, the service can be registered with a service discovery mechanism (Eureka, Consul, etc.).

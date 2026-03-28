@@ -1,21 +1,21 @@
 package com.ecart.product.service;
 
-import com.ecart.product.dto.ProductRequest;
-import com.ecart.product.dto.ProductResponse;
+import com.ecart.product.dto.ProductRequestDto;
+import com.ecart.product.dto.ProductResponseDto;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface ProductService {
-    List<ProductResponse> getAllProducts();
+    List<ProductResponseDto> getAllProducts();
 
-    ProductResponse getProductById(Long id);
+    ProductResponseDto getProductById(Long id);
 
-    ProductResponse createProduct(ProductRequest productRequest);
+    ProductResponseDto createProduct(ProductRequestDto productRequestDto);
 
-    Optional<ProductResponse> updateProduct(Long id, ProductRequest productRequest);
+    ProductResponseDto updateProduct(Long id, ProductRequestDto productRequestDto);
 
     boolean deleteProduct(Long id);
 
-    List<ProductResponse> searchProducts(String keyword);
+    List<ProductResponseDto> searchProducts(String keyword);
 }

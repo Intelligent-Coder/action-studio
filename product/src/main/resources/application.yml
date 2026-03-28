@@ -3,10 +3,45 @@ spring:
     name: product-service
   config:
     import: optional:configserver:http://localhost:8888
+  datasource:
+    url: jdbc:h2:mem:products
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:5761/eureka
-      fetch-registry: true
-      register-with-eureka: true
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+
+logging:
+  level:
+    root: INFO
+    org.springdoc: TRACE
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  api-docs:
+    path: /v3/api-docs
+
+
+server:
+  port: 8082
+
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:5761/eureka
+#      fetch-registry: true
+#      register-with-eureka: true

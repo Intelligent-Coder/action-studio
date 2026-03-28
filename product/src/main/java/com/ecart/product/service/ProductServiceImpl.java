@@ -1,9 +1,12 @@
 package com.ecart.product.service;
 
-import com.ecart.product.dto.ProductRequest;
-import com.ecart.product.dto.ProductResponse;
+import com.ecart.product.dto.ProductRequestDto;
+import com.ecart.product.dto.ProductResponseDto;
 import com.ecart.product.entity.Product;
+import com.ecart.product.exception.DuplicateResourceException;
+import com.ecart.product.exception.ResourceNotFoundException;
 import com.ecart.product.repository.ProductRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,37 +16,41 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
 
     @Override
-    public List<ProductResponse> getAllProducts() {
+    public List<ProductResponseDto> getAllProducts() {
         return productRepository.findByActiveTrue()
-                .stream().map(this::mapToResponse).collect(Collectors.toList());
+                .stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
     @Override
-    public ProductResponse getProductById(Long id) {
+    public ProductResponseDto getProductById(Long id) {
         return productRepository.findByIdAndActiveTrue(id)
-                .map(this::mapToResponse).orElse(null);
+                .map(this::convertToDto).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
     }
 
     @Override
-    public ProductResponse createProduct(ProductRequest productRequest) {
+    public ProductResponseDto createProduct(ProductRequestDto productRequestDto) {
+        if (productRepository.findByName(productRequestDto.getName()).isPresent()) {
+            throw new DuplicateResourceException("Product already exists");
+        }
         final Product product = new Product();
-        mapToEntity(productRequest, product);
+        mapToEntity(productRequestDto, product);
         product.setActive(true);
         Product savedProduct = productRepository.save(product);
-        return mapToResponse(savedProduct);
+        return convertToDto(savedProduct);
     }
 
     @Override
-    public Optional<ProductResponse> updateProduct(Long id, ProductRequest productRequest) {
+    public ProductResponseDto updateProduct(Long id, ProductRequestDto productRequestDto) {
         return productRepository.findById(id)
                 .map(existingProduct -> {
-                    mapToEntity(productRequest, existingProduct);
-                    return mapToResponse(productRepository.save(existingProduct));
-                });
+                    mapToEntity(productRequestDto, existingProduct);
+                    return convertToDto(productRepository.save(existingProduct));
+                }).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
     }
 
     @Override
@@ -52,34 +59,34 @@ public class ProductServiceImpl implements ProductService {
             product.setActive(false);
             productRepository.save(product);
             return true;
-        }).orElse(false);
+        }).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
     }
 
     @Override
-    public List<ProductResponse> searchProducts(String keyword) {
+    public List<ProductResponseDto> searchProducts(String keyword) {
         return productRepository.searchProducts(keyword).stream()
-                .map(this::mapToResponse).toList();
+                .map(this::convertToDto).toList();
     }
 
-    private void mapToEntity(ProductRequest productRequest, Product product) {
-        product.setName(productRequest.getName());
-        product.setDescription(productRequest.getDescription());
-        product.setPrice(productRequest.getPrice());
-        product.setStockQuantity(productRequest.getStockQuantity());
-        product.setCategory(productRequest.getCategory());
-        product.setImageUrl(productRequest.getImageUrl());
+    private void mapToEntity(ProductRequestDto productRequestDto, Product product) {
+        product.setName(productRequestDto.getName());
+        product.setDescription(productRequestDto.getDescription());
+        product.setPrice(productRequestDto.getPrice());
+        product.setStockQuantity(productRequestDto.getStockQuantity());
+        product.setCategory(productRequestDto.getCategory());
+        product.setImageUrl(productRequestDto.getImageUrl());
     }
 
-    private ProductResponse mapToResponse(Product product) {
-        ProductResponse productResponse = new ProductResponse();
-        productResponse.setId(product.getId());
-        productResponse.setName(product.getName());
-        productResponse.setDescription(product.getDescription());
-        productResponse.setPrice(product.getPrice());
-        productResponse.setStockQuantity(product.getStockQuantity());
-        productResponse.setImageUrl(product.getImageUrl());
-        productResponse.setCategory(product.getCategory());
-        productResponse.setActive(product.isActive());
-        return productResponse;
+    private ProductResponseDto convertToDto(Product product) {
+        ProductResponseDto productResponseDto = new ProductResponseDto();
+        productResponseDto.setId(product.getId());
+        productResponseDto.setName(product.getName());
+        productResponseDto.setDescription(product.getDescription());
+        productResponseDto.setPrice(product.getPrice());
+        productResponseDto.setStockQuantity(product.getStockQuantity());
+        productResponseDto.setImageUrl(product.getImageUrl());
+        productResponseDto.setCategory(product.getCategory());
+        productResponseDto.setActive(product.isActive());
+        return productResponseDto;
     }
 }
