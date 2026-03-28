@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: product-service
+  config:
+    import: optional:configserver:http://localhost:8888
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:5761/eureka
+      fetch-registry: true
+      register-with-eureka: true
