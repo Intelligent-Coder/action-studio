@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: config-server
+
+  profiles:
+    active: native
+
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: classpath:/config, file:./config
+
+#  rabbitmq:
+#    host: localhost
+#    port: 5672
+#    username: guest
+#    password: guest
+
+
+#  active:
+#    profiles: jdbc
+
+#  datasource:
+#    url: jdbc:postgresql://localhost:5432/user
+#    username: ${DB_USER}
+#    password: ${DB_PASSWORD}
+#    driver-class-name: org.postgresql.Driver
+
+#  cloud:
+#    config:
+#      server:
+#        git:
+#          uri: https://github.com/Intelligent-Coder/action-studio.git
+#          default-label: patch-1
+#          search-paths:
+#            - app-configuration
+#  cloud:
+#    config:
+#      server:
+#        jdbc:
+#          sql: "SELECT PROPS"
+
+server:
+  port: 8888
+
+#encrypt:
+#  key: "${AES_KEY}"
+
+#encrypt:
+#  key-store:
+#    location: config-server.jks
+#    password: password
+#    alias: config-server-key
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+
+
+
+
+
+
+
+
+
+

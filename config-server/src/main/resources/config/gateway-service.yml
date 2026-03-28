@@ -1,0 +1,61 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: product-service
+          uri: lb://product-service
+          predicates:
+            - Path=/api/products/**
+          filters:
+            - "RewritePath=/users/(?<segment>.*),/api/users/${segment}"
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/user/**
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/api/orders/**, /api/cart/**
+        - id: eureka-server
+          uri: http://localhost:8761
+          predicates:
+            - Path=/eureka/main
+          filters:
+            - SetPath=/
+        - id: eureka-server-static
+          uri: http://localhost:8761
+          predicates:
+            - Path=/eureka/**
+
+server:
+  port: 8085
+
+logging:
+  level:
+    root: info
+    org.springframework.cloud.gateway.route.RouteDefinitionLocator: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      ecomBreaker:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        slidingWindowType: count_based
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenStateEnabled: true
