@@ -21,6 +21,12 @@ buildNumber.properties
 *~
 .DS_Store
 
+# Eclipse / STS / VS Code Java Language Server
+.classpath
+.project
+.settings/
+.factorypath
+
 # Java
 *.class
 *.jar
