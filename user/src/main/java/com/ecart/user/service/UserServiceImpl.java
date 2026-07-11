@@ -67,6 +67,8 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
+        validateUniqueFields(id, updateUserDto.getEmail(), updateUserDto.getPhoneNumber());
+
         user.setEmail(updateUserDto.getEmail());
         user.setFirstName(updateUserDto.getFirstName());
         user.setLastName(updateUserDto.getLastName());
@@ -82,6 +84,20 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         userRepository.delete(user);
+    }
+
+    private void validateUniqueFields(Long currentUserId, String email, String phoneNumber) {
+        userRepository.findByEmail(email)
+                .filter(existingUser -> !existingUser.getId().equals(currentUserId))
+                .ifPresent(existingUser -> {
+                    throw new DuplicateResourceException("User with email already exists");
+                });
+
+        userRepository.findByPhoneNumber(phoneNumber)
+                .filter(existingUser -> !existingUser.getId().equals(currentUserId))
+                .ifPresent(existingUser -> {
+                    throw new DuplicateResourceException("User with phone number already exists");
+                });
     }
 
     private UserDto convertToDto(User user) {

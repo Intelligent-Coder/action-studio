@@ -48,17 +48,18 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findById(id)
                 .map(existingProduct -> {
                     mapToEntity(productRequestDto, existingProduct);
+                    if (productRequestDto.getStockQuantity() != null && productRequestDto.getStockQuantity() > 0) {
+                        existingProduct.setActive(true);
+                    }
                     return convertToDto(productRepository.save(existingProduct));
                 }).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
     }
 
     @Override
-    public boolean deleteProduct(Long id) {
-        return productRepository.findById(id).map(product -> {
-            product.setActive(false);
-            productRepository.save(product);
-            return true;
-        }).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+    public void deleteProduct(Long id) {
+        Product product = productRepository.findByIdAndActiveTrue(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        product.setActive(false);
+        productRepository.save(product);
     }
 
     @Override

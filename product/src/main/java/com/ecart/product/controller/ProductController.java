@@ -44,18 +44,16 @@ public class ProductController {
     })
     public ResponseEntity<ProductResponseDto> getProductById(
             @Parameter(description = "Product ID", required = true) @PathVariable Long id) {
-        ProductResponseDto response = productService.getProductById(id);
-        return response != null ? ResponseEntity.ok(response) : ResponseEntity.notFound().build();
+        return ResponseEntity.ok(productService.getProductById(id));
     }
 
     @PostMapping
     @Operation(summary = "Create a new product", description = "Create a new product with the provided details")
     @ApiResponse(responseCode = "201", description = "Product created successfully",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductResponseDto.class)))
-    @ApiResponse(responseCode = "404", description = "Product not found", content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<ProductResponseDto> createProduct(
             @RequestBody ProductRequestDto productRequestDto) {
+        // TODO: Add request validation with @Valid and DTO validation annotations.
         return new ResponseEntity<>(productService.createProduct(productRequestDto), HttpStatus.CREATED);
     }
 
@@ -82,8 +80,8 @@ public class ProductController {
     })
     public ResponseEntity<Void> deleteProduct(
             @Parameter(description = "Product ID", required = true) @PathVariable Long id) {
-        return productService.deleteProduct(id) ? ResponseEntity.noContent().build() :
-                ResponseEntity.notFound().build();
+        productService.deleteProduct(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/search")

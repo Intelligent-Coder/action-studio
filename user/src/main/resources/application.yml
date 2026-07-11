@@ -13,13 +13,13 @@ spring:
       enabled: true
 
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
     show-sql: false
     properties:
       hibernate:
         format_sql: true
+    open-in-view: false
 
 springdoc:
   swagger-ui:
