@@ -1,6 +1,5 @@
 package com.ecart.order.clients;
 
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
@@ -11,8 +10,7 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 public class ServiceClientConfig {
 
     @Bean
-    @LoadBalanced
-    public RestClient.Builder loadBalancedRestClientBuilder() {
+    public RestClient.Builder restClientBuilder() {
         return RestClient.builder();
     }
 

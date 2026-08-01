@@ -11,6 +11,9 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaymentRequestDto {
+    @NotNull(message = "Order ID is required")
+    private Long orderId;
+
     @NotNull(message = "User ID is required")
     private Long userId;
 

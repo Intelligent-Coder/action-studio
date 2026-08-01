@@ -1,10 +1,13 @@
+server:
+  port: 8084
+
 spring:
   application:
     name: payment-service
   config:
     import: optional:configserver:http://localhost:8888
   datasource:
-    url: jdbc:h2:mem:paymentdb
+    url: jdbc:h2:file:./data/payments;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1
     driverClassName: org.h2.Driver
     username: sa
     password:
@@ -14,11 +17,17 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: false
     properties:
       hibernate:
         format_sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
 
 logging:
   level:

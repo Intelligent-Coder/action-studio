@@ -19,6 +19,9 @@ public class Payment {
     @Column(nullable = false, unique = true)
     private String transactionId;
 
+    @Column(name = "order_id")
+    private Long orderId;
+
     @Column(name = "user_id")
     private Long userId;
 

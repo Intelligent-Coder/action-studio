@@ -1,12 +1,14 @@
 package org.example.service;
 
+import org.example.client.OrderServiceClient;
 import org.example.dto.PaymentRequestDto;
 import org.example.dto.PaymentResponseDto;
 import org.example.entity.Payment;
-import org.example.entity.User;
 import org.example.exception.InvalidPaymentException;
 import org.example.exception.ResourceNotFoundException;
 import org.example.repository.PaymentRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,29 +21,30 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class PaymentService {
+
+    private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
+
     private final PaymentRepository paymentRepository;
-    private final UserRepository userRepository;
     private final TransactionService transactionService;
+    private final OrderServiceClient orderServiceClient;
 
     public PaymentService(PaymentRepository paymentRepository,
-                         UserRepository userRepository,
-                         TransactionService transactionService) {
+                          TransactionService transactionService,
+                          OrderServiceClient orderServiceClient) {
         this.paymentRepository = paymentRepository;
-        this.userRepository = userRepository;
         this.transactionService = transactionService;
+        this.orderServiceClient = orderServiceClient;
     }
 
     public PaymentResponseDto createPayment(PaymentRequestDto paymentRequestDto) {
-        User user = userRepository.findById(paymentRequestDto.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + paymentRequestDto.getUserId()));
-
-        if (paymentRequestDto.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+        if (paymentRequestDto.getAmount() == null || paymentRequestDto.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidPaymentException("Payment amount must be greater than zero");
         }
 
         Payment payment = new Payment();
         payment.setTransactionId(UUID.randomUUID().toString());
-        payment.setUser(user);
+        payment.setOrderId(paymentRequestDto.getOrderId());
+        payment.setUserId(paymentRequestDto.getUserId());
         payment.setAmount(paymentRequestDto.getAmount());
         payment.setCurrency(paymentRequestDto.getCurrency());
         payment.setPaymentMethod(Payment.PaymentMethod.valueOf(paymentRequestDto.getPaymentMethod()));
@@ -51,7 +54,6 @@ public class PaymentService {
 
         Payment savedPayment = paymentRepository.save(payment);
 
-        // Log transaction
         transactionService.logTransaction(savedPayment, "AUTHORIZE", "Payment authorization initiated");
 
         return convertToDto(savedPayment);
@@ -77,8 +79,8 @@ public class PaymentService {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found with id: " + paymentId));
 
-        if (payment.getStatus() != Payment.PaymentStatus.PROCESSING) {
-            throw new InvalidPaymentException("Payment cannot be completed. Current status: " + payment.getStatus());
+        if (payment.getStatus() != Payment.PaymentStatus.PROCESSING && payment.getStatus() != Payment.PaymentStatus.PENDING) {
+            throw new InvalidPaymentException("Payment cannot be completed from status: " + payment.getStatus());
         }
 
         payment.setStatus(Payment.PaymentStatus.COMPLETED);
@@ -86,6 +88,14 @@ public class PaymentService {
         Payment savedPayment = paymentRepository.save(payment);
 
         transactionService.logTransaction(savedPayment, "VERIFICATION", "Payment completed successfully");
+
+        if (savedPayment.getOrderId() != null) {
+            try {
+                orderServiceClient.updateOrderStatus(savedPayment.getOrderId(), "CONFIRMED");
+            } catch (Exception e) {
+                log.warn("Failed to notify Order Service of confirmation for order {}: {}", savedPayment.getOrderId(), e.getMessage());
+            }
+        }
 
         return convertToDto(savedPayment);
     }
@@ -114,6 +124,14 @@ public class PaymentService {
         Payment savedPayment = paymentRepository.save(payment);
 
         transactionService.logFailedTransaction(savedPayment, "VOID", errorMessage);
+
+        if (savedPayment.getOrderId() != null) {
+            try {
+                orderServiceClient.updateOrderStatus(savedPayment.getOrderId(), "CANCELLED");
+            } catch (Exception e) {
+                log.warn("Failed to notify Order Service of cancellation for order {}: {}", savedPayment.getOrderId(), e.getMessage());
+            }
+        }
 
         return convertToDto(savedPayment);
     }
@@ -153,11 +171,12 @@ public class PaymentService {
         PaymentResponseDto dto = new PaymentResponseDto();
         dto.setId(payment.getId());
         dto.setTransactionId(payment.getTransactionId());
-        dto.setUserId(payment.getUser().getId());
+        dto.setOrderId(payment.getOrderId());
+        dto.setUserId(payment.getUserId());
         dto.setAmount(payment.getAmount());
         dto.setCurrency(payment.getCurrency());
-        dto.setStatus(payment.getStatus().toString());
-        dto.setPaymentMethod(payment.getPaymentMethod().toString());
+        dto.setStatus(payment.getStatus() != null ? payment.getStatus().toString() : null);
+        dto.setPaymentMethod(payment.getPaymentMethod() != null ? payment.getPaymentMethod().toString() : null);
         dto.setDescription(payment.getDescription());
         dto.setReferenceNumber(payment.getReferenceNumber());
         dto.setCreatedAt(payment.getCreatedAt());

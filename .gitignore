@@ -51,6 +51,9 @@ application-*.properties
 .env.local
 .env.*.local
 
+# Local H2 database files
+data/
+
 # OS
 Thumbs.db
 .DS_Store

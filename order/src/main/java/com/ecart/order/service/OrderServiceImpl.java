@@ -9,6 +9,7 @@ import com.ecart.order.entity.Order;
 import com.ecart.order.entity.OrderItem;
 import com.ecart.order.entity.OrderStatus;
 import com.ecart.order.exception.EmptyCartException;
+import com.ecart.order.exception.ResourceNotFoundException;
 import com.ecart.order.repository.OrderRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +60,22 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(order);
         cartService.clearCart(userId);
         return mapToOrderResponse(savedOrder);
+    }
 
+    @Override
+    public OrderResponse getOrderById(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+        return mapToOrderResponse(order);
+    }
+
+    @Override
+    public OrderResponse updateOrderStatus(Long id, OrderStatus status) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+        order.setStatus(status);
+        Order updated = orderRepository.save(order);
+        return mapToOrderResponse(updated);
     }
 
     private OrderResponse mapToOrderResponse(Order savedOrder) {
