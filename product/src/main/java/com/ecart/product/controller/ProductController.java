@@ -2,7 +2,9 @@ package com.ecart.product.controller;
 
 import com.ecart.product.dto.ProductRequestDto;
 import com.ecart.product.dto.ProductResponseDto;
+import com.ecart.product.dto.StockUpdateRequest;
 import com.ecart.product.exception.ErrorResponse;
+import com.ecart.product.exception.ValidationErrorResponse;
 import com.ecart.product.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +43,7 @@ public class ProductController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductResponseDto.class))),
             @ApiResponse(responseCode = "404", description = "Product not found",
                     content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = ErrorResponse.class)))
+                            schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<ProductResponseDto> getProductById(
             @Parameter(description = "Product ID", required = true) @PathVariable Long id) {
@@ -49,11 +52,16 @@ public class ProductController {
 
     @PostMapping
     @Operation(summary = "Create a new product", description = "Create a new product with the provided details")
-    @ApiResponse(responseCode = "201", description = "Product created successfully",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductResponseDto.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Product created successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid product data",
+                    content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "A product with this name already exists",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public ResponseEntity<ProductResponseDto> createProduct(
-            @RequestBody ProductRequestDto productRequestDto) {
-        // TODO: Add request validation with @Valid and DTO validation annotations.
+            @Valid @RequestBody ProductRequestDto productRequestDto) {
         return new ResponseEntity<>(productService.createProduct(productRequestDto), HttpStatus.CREATED);
     }
 
@@ -62,12 +70,14 @@ public class ProductController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product updated successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid product data",
+                    content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "Product not found", content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<ProductResponseDto> updateProduct(
             @Parameter(description = "Product ID", required = true) @PathVariable Long id,
-            @RequestBody ProductRequestDto productRequestDto) {
+            @Valid @RequestBody ProductRequestDto productRequestDto) {
         return ResponseEntity.ok(productService.updateProduct(id, productRequestDto));
     }
 
@@ -91,5 +101,23 @@ public class ProductController {
     public ResponseEntity<List<ProductResponseDto>> searchProducts(
             @Parameter(description = "Search keyword", required = true, example = "laptop") @RequestParam String keyword) {
         return ResponseEntity.ok(productService.searchProducts(keyword));
+    }
+
+    @PostMapping("/{id}/decrement-stock")
+    @Operation(summary = "Decrease product stock",
+            description = "Subtracts the requested quantity from an active product's stock. "
+                    + "Returns an error if the product does not exist or stock is insufficient.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Stock decreased successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid quantity",
+                    content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Product not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Insufficient stock",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public ResponseEntity<Void> decrementStock(@PathVariable Long id, @Valid @RequestBody StockUpdateRequest request) {
+        productService.decrementStock(id, request.getQuantity());
+        return ResponseEntity.noContent().build();
     }
 }

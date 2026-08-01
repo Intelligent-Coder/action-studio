@@ -17,4 +17,6 @@ public interface ProductService {
     void deleteProduct(Long id);
 
     List<ProductResponseDto> searchProducts(String keyword);
+
+    void decrementStock(Long id, Integer quantity);
 }

@@ -69,6 +69,12 @@ public class TransactionService {
                 .collect(Collectors.toList());
     }
 
+    public void deleteTransaction(Long transactionId) {
+        Transaction transaction = transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with id: " + transactionId));
+        transactionRepository.delete(transaction);
+    }
+
     private TransactionDto convertToDto(Transaction transaction) {
         TransactionDto dto = new TransactionDto();
         dto.setId(transaction.getId());

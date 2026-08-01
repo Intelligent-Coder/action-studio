@@ -1,0 +1,29 @@
+# --- Cart Controller Endpoints ---
+
+# Add an item to the cart
+# Replace '1' with a valid user ID and update the product ID and quantity in the request body.
+curl -X POST http://localhost:8083/api/cart \
+-H "Content-Type: application/json" \
+-H "X-User-ID: 1" \
+-d '{
+  "productId": 1,
+  "quantity": 2
+}'
+
+# Get all items in the cart for a user
+# Replace '1' with a valid user ID.
+curl -X GET http://localhost:8083/api/cart \
+-H "X-User-ID: 1"
+
+# Remove an item from the cart
+# Replace '1' with a valid user ID and '1' with the ID of the product to remove.
+curl -X DELETE http://localhost:8083/api/cart/items/1 \
+-H "X-User-ID: 1"
+
+
+# --- Order Controller Endpoints ---
+
+# Create an order from the user's cart
+# Replace '1' with a valid user ID.
+curl -X POST http://localhost:8083/api/orders \
+-H "X-User-ID: 1"

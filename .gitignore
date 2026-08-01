@@ -16,6 +16,7 @@ buildNumber.properties
 *.iws
 *.ipr
 .vscode/
+bin/
 *.swp
 *.swo
 *~
@@ -53,3 +54,7 @@ application-*.properties
 # OS
 Thumbs.db
 .DS_Store
+
+# Local assistant files
+AGENTS.md
+FRONTEND_IMPLEMENTATION_GUIDE.md

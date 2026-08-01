@@ -4,6 +4,7 @@ import com.ecart.product.dto.ProductRequestDto;
 import com.ecart.product.dto.ProductResponseDto;
 import com.ecart.product.entity.Product;
 import com.ecart.product.exception.DuplicateResourceException;
+import com.ecart.product.exception.InsufficientStockException;
 import com.ecart.product.exception.ResourceNotFoundException;
 import com.ecart.product.repository.ProductRepository;
 import jakarta.transaction.Transactional;
@@ -66,6 +67,22 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductResponseDto> searchProducts(String keyword) {
         return productRepository.searchProducts(keyword).stream()
                 .map(this::convertToDto).toList();
+    }
+
+    @Override
+    public void decrementStock(Long id, Integer quantity) {
+        Product product = productRepository.findByIdAndActiveTrue(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        if (product.getStockQuantity() == null || product.getStockQuantity() < quantity) {
+            throw new InsufficientStockException("Insufficient stock");
+        } else {
+            product.setStockQuantity(product.getStockQuantity() - quantity);
+        }
+
+        if (product.getStockQuantity() == 0) {
+            product.setActive(false);
+        }
+        productRepository.save(product);
+
     }
 
     private void mapToEntity(ProductRequestDto productRequestDto, Product product) {
